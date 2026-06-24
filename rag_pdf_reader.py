@@ -1,4 +1,3 @@
-
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -14,7 +13,7 @@ load_dotenv()
 model = ChatGroq(model='qwen/qwen3-32b', reasoning_format='parsed')
 
 print("Loading PDF document...")
-loader = PyMuPDFLoader('ai.pdf')
+loader = PyMuPDFLoader('ten_RAG_Architectures.pdf')
 docs = loader.load()
 
 # Split the heavy PDF text into smaller chunks of 1000 characters to fit LLM context limits
@@ -46,7 +45,7 @@ def retrieve_context(query: str):
 prompt= 'You are an agent who retrieves context from pdf doc'
 # Bind the model and our custom retrieval tool together to build the agent
 agent = create_agent(model, [ retrieve_context ], system_prompt=prompt)
-query = 'what is Neural Networks according to the documnt ?'
+query = 'What is Agentic RAG and give me an example of it ?'
 
 # Stream the agent's internal thinking process and tool executions to the terminal live
 for step in agent.stream({"messages":[
