@@ -1,89 +1,62 @@
-# pdf-rag-agent-langchain
+# Multimodal PDF RAG & Agentic RAG Experiments
 
-# 🤖 PDF RAG Agent with LangChain & Groq
+This repository is a collection of hands-on projects where I experimented with different architectures of **RAG (Retrieval-Augmented Generation)** using LangChain (v0.3), Groq Cloud (Llama/Qwen), and local Hugging Face Embeddings. 
 
-An intelligent, conversational Retrieval-Augmented Generation (RAG) agent capable of parsing complex PDF documents and answering user queries with high factual accuracy, using **LangChain**, **Groq (Qwen 32B)**, and an **InMemory Vector Store**.
+The project tracks my journey from building a classic, simple PDF Q&A setup to modern **LCEL (LangChain Expression Language) Pipelines** and fully autonomous **ReAct-style AI Agents**.
 
 ---
 
-## 🏗️ System Architecture & Workflow
+## 🚀 What's Inside? (The 3 Projects)
 
-Here is how the document processing and question-answering pipeline works under the hood:
+I have structured this repository into three distinct architectural implementations:
 
-```text
-┌────────────────────────────────────────────────────────┐
-│                   1. Ingestion Phase                   │
-└────────────────────────────────────────────────────────┘
-          [ Your PDF (ai.pdf) ] 
-                     │
-                     ▼ (PyMuPDFLoader)
-          [ Raw Text Loaded ]
-                     │
-                     ▼ (RecursiveCharacterTextSplitter: Chunk 1000, Overlap 200)
-          [ Document Chunks ]
-                     │
-                     ▼ (HuggingFaceEmbeddings: all-MiniLM-L6-v2)
-          [ Vector Embeddings ]
-                     │
-                     ▼
-          [ InMemory Vector Store ]
-                     ▲
-                     │ (Similarity Search: k=3)
-                     │
-┌────────────────────┴───────────────────────────────────┐
-│                   2. Execution Phase                   │
-└────────────────────────────────────────────────────────┘
-          [ User Query: "What is NLP?" ]
-                     │
-                     ▼
-          [ LangGraph Agent Node: model ]
-                     │
-                     ▼ (Decides to use Tool)
-          [ Tool Calling: retrieve_context(query) ]
-                     │
-                     ▼ (Fetches Top 3 Chunks)
-          [ Context Formatted & Returned ]
-                     │
-                     ▼
-          [ ChatGroq LLM (qwen/qwen3-32b) ]
-                     │
-                     ▼
-          [ Factual Response Streamed ]
+### 1. Multi-PDF Chat Application with Custom UI (`app_v1.py`)
+A production-ready full-stack chat interface capable of ingestion and reasoning over multiple PDF files simultaneously.
+* **UI/UX:** Streamlit backend rendered with custom, elegant HTML/CSS chat bubbles for a professional look.
+* **Core Framework:** Built using LangChain v0.3's modern **LCEL pipeline (`|`)**, completely avoiding deprecated or messy legacy chain imports.
+* **State Management:** Uses formal `HumanMessage` and `AIMessage` objects inside Streamlit's session state to maintain accurate conversation context across multiple turns.
+* **Models:** Powered by `llama-3.3-70b-versatile` via Groq for high-speed generation, and local `all-MiniLM-L6-v2` embeddings.
 
+### 2. Autonomous Agentic RAG (`agent.py`)
+Moving beyond standard text retrieval, this script implements an **AI Agent** that actively decides how and when to look for information.
+* **Reasoning Engine:** Utilizes the advanced `qwen3-32b` model with a native reasoning format parser.
+* **Tool-Driven Execution:** Uses a custom LangChain `@tool` (`retrieve_context`). The agent evaluates the user query and autonomously invokes this tool if it needs document data.
+* **Live Streaming:** Streams the agent's actual internal "thinking process" and tool execution logs directly to the terminal live.
+* **Storage:** Leverages a lightweight `InMemoryVectorStore` to hold embeddings directly in RAM for instant lookups.
 
-Orchestration & Framework: LangChain & LangGraph (Agentic Flow)
+### 3. Classic Single-PDF Q&A System (`app_classic.py`)
+The baseline/traditional implementation of RAG included for comparative analysis.
+* **Framework:** Utilizes the legacy `load_qa_chain` ("stuff" type format) approach.
+* **Models:** Uses `llama-3.1-8b-instant` via Groq. It’s a great lightweight reference script for spinning up a quick single-document QA pipeline.
 
-LLM Provider: Groq Cloud (qwen/qwen3-32b)
+---
 
-Embedding Model: HuggingFace (sentence-transformers/all-MiniLM-L6-v2)
+## 🛠️ Tech Stack
 
-Document Parser: PyMuPDF (via PyMuPDFLoader)
+* **Orchestration:** LangChain (v0.3), LangChain Core, LangChain Community
+* **LLM Providers:** Groq Cloud Ecosystem (`llama-3.3-70b`, `llama-3.1-8b`, `qwen-32b`)
+* **Embeddings:** Hugging Face (`sentence-transformers/all-MiniLM-L6-v2` — 100% free and runs locally)
+* **Vector Databases:** FAISS (Facebook AI Similarity Search) & InMemoryVectorStore
+* **Frontend UI:** Streamlit 
+* **PDF Parsing:** PyPDF2 & PyMuPDF (Fitz)
 
-Vector Storage: LangChain InMemoryVectorStore
+---
 
+## 📦 Installation & Setup
 
-Getting Started
-Follow these step-by-step instructions to set up and run the project locally.
+1. Clone the repository and initialize a Virtual Environment
 
-1. Clone the Repository
-git clone [https://github.com/YOUR_USERNAME/pdf-rag-agent-langchain.git](https://github.com/YOUR_USERNAME/pdf-rag-agent-langchain.git)
+git clone <your-repository-link>
 cd pdf-rag-agent-langchain
-
-2. Set Up a Virtual Environment
 python -m venv venv
-.\venv\Scripts\activate
+# Activate virtual environment
+venv\Scripts\activate          # On Windows
 
-3. Install Requirements
-pip install -r requirements.txt
+2. Install dependencies
 
-4. Configure Environment Variables
-Create a .env file in the root directory of your project (use the provided .env.example as a guide) and add your Groq API Key:
+pip install streamlit langchain langchain-groq langchain-huggingface langchain-community
+
+3. Setup your Environment Variables
+Create a .env file in the root directory of your project and paste your Groq API key:
+
 GROQ_API_KEY=gsk_your_actual_groq_api_key_here
-
-5. Add Your PDF Document
-Place the PDF document you want to query into the project root directory and name it ai.pdf (or update the filename directly in rag_pdf_reader.py).
-
-6. Run the Agent
-Execute the pipeline script to start querying the agent:
-
-python rag_pdf_reader.py
